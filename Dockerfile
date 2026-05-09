@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-ARG NODE_VERSION=20.19.0
+ARG NODE_VERSION=22.12.0
 ARG PNPM_VERSION=9.15.0
 
 FROM node:${NODE_VERSION}-bookworm-slim AS base
@@ -11,6 +11,8 @@ RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
 FROM base AS pnpm-store
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY backend/package.json backend/package.json
+COPY shared/package.json shared/package.json
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     pnpm fetch --frozen-lockfile
 
@@ -19,7 +21,7 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
 COPY backend/package.json backend/package.json
 COPY shared/package.json shared/package.json
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-    pnpm install --frozen-lockfile --offline
+    pnpm install --frozen-lockfile
 
 FROM deps AS builder
 COPY shared shared
