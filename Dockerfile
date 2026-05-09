@@ -7,7 +7,8 @@ FROM node:${NODE_VERSION}-bookworm-slim AS base
 ENV PNPM_HOME="/pnpm" \
     PATH="/pnpm:$PATH"
 WORKDIR /app
-RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
+# Install pnpm directly to avoid corepack signature verification failures in CI/deploy builds.
+RUN npm install -g pnpm@${PNPM_VERSION}
 
 FROM base AS pnpm-store
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
