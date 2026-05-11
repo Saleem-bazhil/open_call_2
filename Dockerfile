@@ -1,3 +1,4 @@
+
 # syntax=docker/dockerfile:1.7
 
 ARG NODE_VERSION=22.12.0
@@ -48,5 +49,5 @@ COPY --from=api-deploy --chown=opencall:nodejs /prod/api ./
 USER opencall
 EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
-    CMD node -e "const p=process.env.PORT||4000; fetch(`http://127.0.0.1:${p}/api/v1/health/runtime`).then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+    CMD node -e "fetch('http://127.0.0.1:4000/api/v1/health/runtime').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node", "dist/server.js"]
