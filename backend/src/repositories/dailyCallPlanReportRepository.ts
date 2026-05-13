@@ -25,6 +25,9 @@ export interface PersistedReportRowMetadata {
 }
 
 export interface PersistedReportRowSnapshot extends PersistedReportRowMetadata {
+  caseCreatedTime: string | null;
+  wipAging: string | null;
+  hpOwnerStatus: string | null;
   rtplStatus: string | null;
   segment: string | null;
   engineer: string | null;
@@ -33,6 +36,7 @@ export interface PersistedReportRowSnapshot extends PersistedReportRowMetadata {
   rca: string | null;
   remarks: string | null;
   manualNotes: string | null;
+  carriedForwardFields: ManualCarryForwardField[];
   manualFieldsCompleted: boolean;
   manualFieldsMissing: ManualCarryForwardField[];
 }
@@ -41,6 +45,9 @@ interface PersistedReportRowSnapshotDbRow {
   id: string;
   serial_no: number;
   ticket_id: string;
+  case_created_time: string | null;
+  wip_aging: string | null;
+  hp_owner_status: string | null;
   rtpl_status: string | null;
   segment: string | null;
   engineer: string | null;
@@ -49,6 +56,7 @@ interface PersistedReportRowSnapshotDbRow {
   rca: string | null;
   remarks: string | null;
   manual_notes: string | null;
+  carried_forward_fields: ManualCarryForwardField[];
   manual_fields_completed: boolean;
   manual_fields_missing: ManualCarryForwardField[];
   updated_at: string | null;
@@ -64,6 +72,10 @@ export interface ReportRowEditPayload {
   manualNotes?: string | null;
   location?: string | null;
   segment?: string | null;
+  caseCreatedTime?: string | null;
+  wipAging?: string | null;
+  hpOwnerStatus?: string | null;
+  clearedCarryForwardFields?: readonly ManualCarryForwardField[];
   manualFieldsCompleted: boolean;
   manualFieldsMissing: readonly ManualCarryForwardField[];
   updatedBy: string | null;
@@ -75,6 +87,7 @@ export interface EditedReportRow {
   regionId: string | null;
   caseCreatedTime: string | null;
   wipAging: string | null;
+  hpOwnerStatus: string | null;
   engineer: string | null;
   rtplStatus: string | null;
   customerMail: string | null;
@@ -83,6 +96,7 @@ export interface EditedReportRow {
   manualNotes: string | null;
   location: string | null;
   segment: string | null;
+  carriedForwardFields: ManualCarryForwardField[];
   manualFieldsCompleted: boolean;
   manualFieldsMissing: ManualCarryForwardField[];
   updatedAt: string;
@@ -97,6 +111,7 @@ interface EditedReportRowDbRow {
   region_id: string | null;
   case_created_time: string | null;
   wip_aging: string | null;
+  hp_owner_status: string | null;
   engineer: string | null;
   rtpl_status: string | null;
   customer_mail: string | null;
@@ -105,6 +120,7 @@ interface EditedReportRowDbRow {
   manual_notes: string | null;
   location: string | null;
   segment: string | null;
+  carried_forward_fields: ManualCarryForwardField[];
   manual_fields_completed: boolean;
   manual_fields_missing: ManualCarryForwardField[];
   updated_at: string;
@@ -150,6 +166,8 @@ interface FinalReportManualCarryForwardDbRow {
   segment: string | null;
   engineer: string | null;
   product: string | null;
+  product_line_name: string | null;
+  work_location: string | null;
   flex_status: string | null;
   hp_owner_status: string | null;
   wo_otc_code: string | null;
@@ -179,8 +197,8 @@ function mapFinalReportManualCarryForwardRow(
     segment: row.segment,
     engineer: row.engineer,
     product: row.product,
-    productLineName: null,
-    workLocation: null,
+    productLineName: row.product_line_name,
+    workLocation: row.work_location,
     flexStatus: row.flex_status,
     hpOwnerStatus: row.hp_owner_status,
     woOtcCode: row.wo_otc_code,
@@ -215,6 +233,7 @@ function mapEditedReportRow(row: EditedReportRowDbRow): EditedReportRow {
     regionId: row.region_id,
     caseCreatedTime: row.case_created_time,
     wipAging: row.wip_aging,
+    hpOwnerStatus: row.hp_owner_status,
     engineer: row.engineer,
     rtplStatus: row.rtpl_status,
     customerMail: row.customer_mail,
@@ -223,6 +242,7 @@ function mapEditedReportRow(row: EditedReportRowDbRow): EditedReportRow {
     manualNotes: row.manual_notes,
     location: row.location,
     segment: row.segment,
+    carriedForwardFields: row.carried_forward_fields,
     manualFieldsCompleted: row.manual_fields_completed,
     manualFieldsMissing: row.manual_fields_missing,
     updatedAt: row.updated_at,
@@ -239,6 +259,9 @@ function mapPersistedReportRowMetadata(
     id: row.id,
     serialNo: row.serial_no,
     ticketId: row.ticket_id,
+    caseCreatedTime: row.case_created_time,
+    wipAging: row.wip_aging,
+    hpOwnerStatus: row.hp_owner_status,
     rtplStatus: row.rtpl_status,
     segment: row.segment,
     engineer: row.engineer,
@@ -247,6 +270,7 @@ function mapPersistedReportRowMetadata(
     rca: row.rca,
     remarks: row.remarks,
     manualNotes: row.manual_notes,
+    carriedForwardFields: row.carried_forward_fields,
     manualFieldsCompleted: row.manual_fields_completed,
     manualFieldsMissing: row.manual_fields_missing,
     updatedAt: row.updated_at,
@@ -319,6 +343,8 @@ export async function insertDailyCallPlanReportRows(
           segment,
           engineer,
           product,
+          product_line_name,
+          work_location,
           flex_status,
           hp_owner_status,
           wo_otc_code,
@@ -349,8 +375,8 @@ export async function insertDailyCallPlanReportRows(
           $1, $2, $3, $4, $5, $6, $7, $8,
           $9, $10, $11, $12, $13, $14, $15, $16,
           $17, $18, $19, $20, $21, $22, $23, $24,
-          $25, $26, $27, $28, $29::jsonb, $30, $31::jsonb, $32, $33::text[],
-          $34, $35::jsonb
+          $25, $26, $27, $28, $29, $30, $31::jsonb, $32, $33::jsonb, $34, $35::text[],
+          $36, $37::jsonb
         )
         RETURNING id, updated_at::TEXT AS updated_at, updated_by::TEXT AS updated_by
       `,
@@ -365,6 +391,8 @@ export async function insertDailyCallPlanReportRows(
         row.enriched.segment,
         row.enriched.engineer,
         row.enriched.product,
+        row.enriched.product_line_name,
+        row.enriched.work_location,
         row.enriched.flex_status,
         row.enriched.hp_owner_status,
         row.enriched.wo_otc_code,
@@ -419,6 +447,8 @@ export async function findFinalReportRowsForManualCarryForwardBySessionId(
         rows.segment,
         rows.engineer,
         rows.product,
+        rows.product_line_name,
+        rows.work_location,
         rows.flex_status,
         rows.hp_owner_status,
         rows.wo_otc_code,
@@ -457,6 +487,9 @@ export async function findDailyCallPlanReportRowMetadataByReportId(
         id,
         serial_no,
         ticket_id,
+        case_created_time::TEXT AS case_created_time,
+        wip_aging,
+        hp_owner_status,
         rtpl_status,
         segment,
         engineer,
@@ -465,6 +498,7 @@ export async function findDailyCallPlanReportRowMetadataByReportId(
         rca,
         remarks,
         manual_notes,
+        carried_forward_fields,
         manual_fields_completed,
         manual_fields_missing,
         updated_at::TEXT AS updated_at,
@@ -510,6 +544,8 @@ export async function findPreviousFinalReportRowsForManualCarryForward(
         rows.segment,
         rows.engineer,
         rows.product,
+        rows.product_line_name,
+        rows.work_location,
         rows.flex_status,
         rows.hp_owner_status,
         rows.wo_otc_code,
@@ -553,10 +589,21 @@ export async function updateDailyCallPlanReportRowManualFields(
         manual_notes = $7,
         location = $8,
         segment = $9,
-        manual_fields_completed = $10,
-        manual_fields_missing = $11::text[],
+        case_created_time = $10,
+        wip_aging = $11,
+        hp_owner_status = $12,
+        carried_forward_fields = COALESCE(
+          (
+            SELECT jsonb_agg(field)
+            FROM jsonb_array_elements_text(rows.carried_forward_fields) AS field
+            WHERE NOT (field = ANY($13::text[]))
+          ),
+          '[]'::jsonb
+        ),
+        manual_fields_completed = $14,
+        manual_fields_missing = $15::text[],
         updated_at = NOW(),
-        updated_by = $12
+        updated_by = $16
       FROM daily_call_plan_reports reports
       WHERE rows.id = $1
         AND reports.id = rows.report_id
@@ -566,6 +613,7 @@ export async function updateDailyCallPlanReportRowManualFields(
         reports.region_id::TEXT AS region_id,
         rows.case_created_time::TEXT AS case_created_time,
         rows.wip_aging,
+        rows.hp_owner_status,
         rows.engineer,
         rows.rtpl_status,
         rows.customer_mail,
@@ -574,6 +622,7 @@ export async function updateDailyCallPlanReportRowManualFields(
         rows.manual_notes,
         rows.location,
         rows.segment,
+        rows.carried_forward_fields,
         rows.manual_fields_completed,
         rows.manual_fields_missing,
         rows.updated_at::TEXT AS updated_at,
@@ -589,6 +638,10 @@ export async function updateDailyCallPlanReportRowManualFields(
       edit.manualNotes,
       edit.location,
       edit.segment,
+      edit.caseCreatedTime,
+      edit.wipAging,
+      edit.hpOwnerStatus,
+      edit.clearedCarryForwardFields ?? [],
       edit.manualFieldsCompleted,
       edit.manualFieldsMissing,
       edit.updatedBy,
@@ -610,6 +663,7 @@ export async function findDailyCallPlanReportRowForEdit(
         reports.region_id::TEXT AS region_id,
         rows.case_created_time::TEXT AS case_created_time,
         rows.wip_aging,
+        rows.hp_owner_status,
         rows.engineer,
         rows.rtpl_status,
         rows.customer_mail,
@@ -618,6 +672,7 @@ export async function findDailyCallPlanReportRowForEdit(
         rows.manual_notes,
         rows.location,
         rows.segment,
+        rows.carried_forward_fields,
         rows.manual_fields_completed,
         rows.manual_fields_missing,
         COALESCE(rows.updated_at, rows.created_at)::TEXT AS updated_at,

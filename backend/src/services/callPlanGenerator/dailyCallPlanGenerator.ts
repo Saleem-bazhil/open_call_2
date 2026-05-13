@@ -104,7 +104,7 @@ const ASP_CODE_REGION_MAP: Record<string, string> = {
 function computeRegionBreakdown(
   rows: readonly GeneratedDailyCallPlanRow[],
 ): import("../../types/reportGeneration.js").RegionBreakdownEntry[] {
-  const regionMap = new Map<string, { count: number; woOtcCodes: Map<string, number> }>();
+  const regionMap = new Map<string, { count: number; closedCount: number; woOtcCodes: Map<string, number> }>();
 
   for (const row of rows) {
     let aspCode = (row.enriched.work_location || "").trim().toUpperCase();
@@ -119,11 +119,14 @@ function computeRegionBreakdown(
 
     let regionData = regionMap.get(aspCode);
     if (!regionData) {
-      regionData = { count: 0, woOtcCodes: new Map() };
+      regionData = { count: 0, closedCount: 0, woOtcCodes: new Map() };
       regionMap.set(aspCode, regionData);
     }
 
     regionData.count++;
+    if (row.carryForward.closedSyntheticRow) {
+      regionData.closedCount++;
+    }
     regionData.woOtcCodes.set(woCode, (regionData.woOtcCodes.get(woCode) ?? 0) + 1);
   }
 
@@ -136,6 +139,7 @@ function computeRegionBreakdown(
       aspCode,
       regionName: ASP_CODE_REGION_MAP[aspCode] ?? "Unknown Region",
       count: data.count,
+      closedCount: data.closedCount,
       woOtcCodeBreakdown,
     };
   });
@@ -228,6 +232,9 @@ async function applyPersistedRowMetadata(
     row.id = persisted.id;
     row.updatedAt = persisted.updatedAt;
     row.updatedBy = persisted.updatedBy;
+    row.enriched.case_created_time = persisted.caseCreatedTime;
+    row.enriched.wip_aging = persisted.wipAging;
+    row.enriched.hp_owner_status = persisted.hpOwnerStatus;
     row.enriched.rtpl_status = persisted.rtplStatus ?? "";
     row.enriched.segment = persisted.segment ?? "";
     row.enriched.engineer = persisted.engineer;
@@ -237,6 +244,7 @@ async function applyPersistedRowMetadata(
     row.enriched.remarks = persisted.remarks;
     row.enriched.manual_notes = persisted.manualNotes;
     row.match.enrichedRow = row.enriched;
+    row.carryForward.carriedForwardFields = persisted.carriedForwardFields;
     row.carryForward.manualFieldsCompleted = persisted.manualFieldsCompleted;
     row.carryForward.manualFieldsMissing = persisted.manualFieldsMissing;
     row.output = orderedDailyCallPlanRow(
