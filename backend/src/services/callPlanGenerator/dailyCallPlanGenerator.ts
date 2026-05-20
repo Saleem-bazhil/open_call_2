@@ -1,4 +1,4 @@
-import { DAILY_CALL_PLAN_COLUMNS } from "@opencall/shared";
+import { DAILY_CALL_PLAN_COLUMNS, regionNameForAspCode } from "@opencall/shared";
 import { withTransaction } from "../../config/database.js";
 import {
   findActiveSlaHoursByCategory,
@@ -94,14 +94,6 @@ function initialCarryForwardMetadata(): ManualCarryForwardRowMetadata {
   };
 }
 
-const ASP_CODE_REGION_MAP: Record<string, string> = {
-  ASPS01461: "CHENNAI",
-  ASPS01463: "VELLORE",
-  ASPS01465: "SALEM",
-  ASPS01489: "KANCHIPURAM",
-  ASPS01511: "HOSUR",
-};
-
 function computeRegionBreakdown(
   rows: readonly GeneratedDailyCallPlanRow[],
 ): import("../../types/reportGeneration.js").RegionBreakdownEntry[] {
@@ -140,7 +132,7 @@ function computeRegionBreakdown(
 
     return {
       aspCode,
-      regionName: ASP_CODE_REGION_MAP[aspCode] ?? "Unknown Region",
+      regionName: regionNameForAspCode(aspCode),
       count: data.count,
       closedCount: data.closedCount,
       woOtcCodeBreakdown,
