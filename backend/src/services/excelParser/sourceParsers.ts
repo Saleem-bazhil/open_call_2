@@ -160,11 +160,22 @@ export function parseCallPlanReport(
     const normalizedTicketId = normalizeTicketId(ticketId);
 
     if (!ticketId || !normalizedTicketId) {
-      issues.push({
-        rowNumber: row.rowNumber,
-        field: "Ticket ID",
-        message: "Call Plan row is missing Ticket ID",
-      });
+      // Check if row has any Call Plan-relevant data at all.
+      // Rows from the Open Call sheet may contain values only in
+      // non-Call-Plan columns (e.g. Product, Segment) — skip those
+      // silently instead of flagging them as parse errors.
+      const hasCallPlanData =
+        !!cleanString(getCell(row.values, ["Morning Status", "RTPL Status"])) ||
+        !!cleanString(getCell(row.values, ["Engineer", "engg.", "Engg.", "engg", "Engineer Name"])) ||
+        !!cleanString(getCell(row.values, ["Location", "Location Name"]));
+
+      if (hasCallPlanData) {
+        issues.push({
+          rowNumber: row.rowNumber,
+          field: "Ticket ID",
+          message: "Call Plan row is missing Ticket ID",
+        });
+      }
       continue;
     }
 

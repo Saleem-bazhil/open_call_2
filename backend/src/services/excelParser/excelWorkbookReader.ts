@@ -64,22 +64,44 @@ export function readExcelSheet(
   let bestHeaderRowIndex = -1;
   let maxScore = -1;
 
-  for (const sheetName of workbook.SheetNames) {
-    const worksheet = workbook.Sheets[sheetName];
-    if (!worksheet) continue;
+  if (sourceType === "CALL_PLAN") {
+    const targetSheet = workbook.SheetNames.find((name) =>
+      name.toLowerCase().includes("open"),
+    );
 
+    if (!targetSheet) {
+      throw new Error("Open Call sheet not found");
+    }
+
+    const worksheet = workbook.Sheets[targetSheet];
     const rawRows = xlsx.utils.sheet_to_json<unknown[]>(worksheet, {
       header: 1,
       blankrows: false,
       defval: "",
     });
 
-    const { index, score } = findHeaderRowIndex(rawRows, requiredColumns);
+    const { index } = findHeaderRowIndex(rawRows, requiredColumns);
 
-    if (score > maxScore) {
-      maxScore = score;
-      bestHeaderRowIndex = index;
-      bestSheetRawRows = rawRows;
+    bestHeaderRowIndex = index;
+    bestSheetRawRows = rawRows;
+  } else {
+    for (const sheetName of workbook.SheetNames) {
+      const worksheet = workbook.Sheets[sheetName];
+      if (!worksheet) continue;
+
+      const rawRows = xlsx.utils.sheet_to_json<unknown[]>(worksheet, {
+        header: 1,
+        blankrows: false,
+        defval: "",
+      });
+
+      const { index, score } = findHeaderRowIndex(rawRows, requiredColumns);
+
+      if (score > maxScore) {
+        maxScore = score;
+        bestHeaderRowIndex = index;
+        bestSheetRawRows = rawRows;
+      }
     }
   }
 
