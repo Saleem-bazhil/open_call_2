@@ -11,6 +11,11 @@ import {
   updateAdminUserProfileController,
 } from "../controllers/adminUserController.js";
 import { listAdminRegionsController } from "../controllers/adminRegionController.js";
+import {
+  getMonitoringDashboardController,
+  getRegionDrillDownController,
+  listAdminActivityController,
+} from "../controllers/adminMonitoringController.js";
 import { requireAuthenticatedUser } from "../middlewares/authMiddleware.js";
 import { requireRole } from "../middlewares/roleMiddleware.js";
 
@@ -22,6 +27,24 @@ adminRouter.get(
   "/regions",
   requireRole(["SUPER_ADMIN", "REGION_ADMIN"]),
   listAdminRegionsController,
+);
+
+adminRouter.get(
+  "/monitoring/dashboard",
+  requireRole(["SUPER_ADMIN"]),
+  getMonitoringDashboardController,
+);
+
+adminRouter.get(
+  "/monitoring/regions/:regionId",
+  requireRole(["SUPER_ADMIN", "REGION_ADMIN"]),
+  getRegionDrillDownController,
+);
+
+adminRouter.get(
+  "/activity",
+  requireRole(["SUPER_ADMIN", "REGION_ADMIN"]),
+  listAdminActivityController,
 );
 
 adminRouter.get(

@@ -1,5 +1,8 @@
-import type { RequestHandler } from "express";
+import type { RequestHandler, Request } from "express";
+import type { AuthenticatedUser } from "../types/auth.js";
 import { requireCurrentUser } from "../services/rbac/regionAccessService.js";
+import { recordActivity } from "../services/audit/activityLogger.js";
+import type { ActivityEventType } from "../repositories/activityLogRepository.js";
 import {
   adminResetPassword,
   changeUserRole,
@@ -11,6 +14,7 @@ import {
   reassignUserRegion,
   updateUserProfile,
 } from "../services/userManagement/userManagementService.js";
+import type { ManagedUser } from "../repositories/userRepository.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { badRequest } from "../utils/httpError.js";
 import {
@@ -29,6 +33,33 @@ function parseUserId(params: Record<string, string | undefined>): string {
     throw badRequest("Invalid user id", result.error.flatten());
   }
   return result.data.id;
+}
+
+function recordUserMutation(
+  request: Request,
+  actor: AuthenticatedUser,
+  target: ManagedUser,
+  eventType: ActivityEventType,
+  extra?: Record<string, unknown>,
+): void {
+  recordActivity({
+    eventType,
+    actor: {
+      id: actor.id,
+      email: actor.email,
+      role: actor.role,
+    },
+    regionId: target.regionId ?? null,
+    targetType: "user",
+    targetId: target.id,
+    metadata: {
+      targetEmail: target.email,
+      targetUsername: target.username,
+      targetRole: target.role,
+      ...(extra ?? {}),
+    },
+    request,
+  });
 }
 
 export const listAdminUsersController: RequestHandler = asyncHandler(
@@ -67,6 +98,7 @@ export const createAdminUserController: RequestHandler = asyncHandler(
       mustChangePassword: input.mustChangePassword ?? true,
       actorId: actor.id,
     });
+    recordUserMutation(request, actor, user, "USER_CREATED");
     response.status(201).json({ data: user });
   },
 );
@@ -80,6 +112,9 @@ export const updateAdminUserProfileController: RequestHandler = asyncHandler(
       ...(input.email !== undefined ? { email: input.email } : {}),
       ...(input.username !== undefined ? { username: input.username } : {}),
       actorId: actor.id,
+    });
+    recordUserMutation(request, actor, user, "USER_PROFILE_UPDATED", {
+      changedFields: Object.keys(input),
     });
     response.json({ data: user });
   },
@@ -95,6 +130,10 @@ export const changeAdminUserRoleController: RequestHandler = asyncHandler(
       regionId: input.regionId ?? null,
       actorId: actor.id,
     });
+    recordUserMutation(request, actor, user, "USER_ROLE_CHANGED", {
+      newRole: user.role,
+      newRegionId: user.regionId,
+    });
     response.json({ data: user });
   },
 );
@@ -105,6 +144,9 @@ export const reassignAdminUserRegionController: RequestHandler = asyncHandler(
     const userId = parseUserId(request.params);
     const input = reassignRegionSchema.parse(request.body);
     const user = await reassignUserRegion(userId, input.regionId, actor.id);
+    recordUserMutation(request, actor, user, "USER_REGION_REASSIGNED", {
+      newRegionId: user.regionId,
+    });
     response.json({ data: user });
   },
 );
@@ -119,6 +161,9 @@ export const adminPasswordResetController: RequestHandler = asyncHandler(
       requireChange: input.requireChange,
       actorId: actor.id,
     });
+    recordUserMutation(request, actor, user, "PASSWORD_RESET", {
+      requireChange: input.requireChange,
+    });
     response.json({ data: user });
   },
 );
@@ -128,6 +173,7 @@ export const deactivateAdminUserController: RequestHandler = asyncHandler(
     const actor = requireCurrentUser(request.currentUser);
     const userId = parseUserId(request.params);
     const user = await deactivateUser(userId, actor.id);
+    recordUserMutation(request, actor, user, "USER_DEACTIVATED");
     response.json({ data: user });
   },
 );
@@ -137,6 +183,7 @@ export const reactivateAdminUserController: RequestHandler = asyncHandler(
     const actor = requireCurrentUser(request.currentUser);
     const userId = parseUserId(request.params);
     const user = await reactivateUser(userId, actor.id);
+    recordUserMutation(request, actor, user, "USER_REACTIVATED");
     response.json({ data: user });
   },
 );

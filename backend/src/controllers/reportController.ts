@@ -6,6 +6,7 @@ import {
   resolveEffectiveRegionId,
 } from "../services/rbac/regionAccessService.js";
 import { aspCodesForRegion } from "../services/rbac/regionRowAccess.js";
+import { recordActivity } from "../services/audit/activityLogger.js";
 import type { GeneratedDailyCallPlanReport } from "../types/reportGeneration.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { reportGenerationRequestSchema } from "../validators/reportGenerationRequestValidator.js";
@@ -54,6 +55,27 @@ export const generateDailyCallPlanReportController: RequestHandler =
       regionId,
       allowCreate: !isRegionAdmin,
     });
+
+    if (!isRegionAdmin) {
+      recordActivity({
+        eventType: "REPORT_GENERATED",
+        actor: {
+          id: currentUser.id,
+          email: currentUser.email,
+          role: currentUser.role,
+        },
+        regionId,
+        targetType: "report",
+        targetId: report.reportId,
+        metadata: {
+          reportDate: report.reportDate,
+          totalRows: report.totalRows,
+          duplicateTicketCount: report.duplicateTicketCount,
+          unmatchedTicketCount: report.unmatchedTicketCount,
+        },
+        request,
+      });
+    }
 
     if (isRegionAdmin && currentUser.regionId) {
       const region = await findRegionById(currentUser.regionId);
