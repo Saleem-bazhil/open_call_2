@@ -98,9 +98,9 @@ export async function findOrCreateCompletedHistorySessionForReport(
       WITH candidate AS (
         SELECT id
         FROM report_history_sessions
-        WHERE flex_upload_batch_id = $4
-          AND renderways_upload_batch_id IS NOT DISTINCT FROM $5
-          AND call_plan_upload_batch_id IS NOT DISTINCT FROM $6
+        WHERE flex_upload_batch_id = $3
+          AND renderways_upload_batch_id IS NOT DISTINCT FROM $4
+          AND call_plan_upload_batch_id IS NOT DISTINCT FROM $5
         ORDER BY
           CASE WHEN status = 'DRAFT' THEN 0 ELSE 1 END,
           updated_at DESC,
@@ -110,18 +110,17 @@ export async function findOrCreateCompletedHistorySessionForReport(
       )
       UPDATE report_history_sessions sessions
       SET
-        title = COALESCE(NULLIF(sessions.title, ''), $2),
+        title = COALESCE(NULLIF(sessions.title, ''), $1),
         status = 'COMPLETED',
-        region_id = $3,
-        daily_call_plan_report_id = $7,
-        total_rows = $8,
+        region_id = $2,
+        daily_call_plan_report_id = $6,
+        total_rows = $7,
         updated_at = NOW()
       FROM candidate
       WHERE sessions.id = candidate.id
       RETURNING sessions.*;
     `,
     [
-      session.userId,
       session.title,
       session.regionId ?? null,
       session.flexUploadBatchId,
