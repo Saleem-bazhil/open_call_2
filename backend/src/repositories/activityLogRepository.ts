@@ -15,7 +15,10 @@ export type ActivityEventType =
   | "USER_REACTIVATED"
   | "UPLOAD_CREATED"
   | "REPORT_GENERATED"
-  | "REPORT_ROW_EDITED";
+  | "REPORT_ROW_EDITED"
+  | "ENGINEER_CREATED"
+  | "ENGINEER_UPDATED"
+  | "ENGINEER_DEACTIVATED";
 
 export type ActivityStatus = "SUCCESS" | "FAILURE";
 

@@ -20,6 +20,14 @@ import {
   getRcaTimelineController,
   listRcaCasesController,
 } from "../controllers/adminRcaController.js";
+import {
+  createAdminEngineerController,
+  deactivateAdminEngineerController,
+  getEngineersDropdownController,
+  listAdminEngineersController,
+  reactivateAdminEngineerController,
+  updateAdminEngineerController,
+} from "../controllers/adminEngineerController.js";
 import { requireAuthenticatedUser } from "../middlewares/authMiddleware.js";
 import { requireRole } from "../middlewares/roleMiddleware.js";
 
@@ -61,6 +69,42 @@ adminRouter.get(
   "/rca/cases/:ticketId",
   requireRole(["SUPER_ADMIN", "REGION_ADMIN"]),
   getRcaTimelineController,
+);
+
+adminRouter.get(
+  "/engineers/dropdown",
+  requireRole(["SUPER_ADMIN", "REGION_ADMIN"]),
+  getEngineersDropdownController,
+);
+
+adminRouter.get(
+  "/engineers",
+  requireRole(["SUPER_ADMIN", "REGION_ADMIN"]),
+  listAdminEngineersController,
+);
+
+adminRouter.post(
+  "/engineers",
+  requireRole(["SUPER_ADMIN", "REGION_ADMIN"]),
+  createAdminEngineerController,
+);
+
+adminRouter.patch(
+  "/engineers/:id",
+  requireRole(["SUPER_ADMIN", "REGION_ADMIN"]),
+  updateAdminEngineerController,
+);
+
+adminRouter.post(
+  "/engineers/:id/deactivate",
+  requireRole(["SUPER_ADMIN", "REGION_ADMIN"]),
+  deactivateAdminEngineerController,
+);
+
+adminRouter.post(
+  "/engineers/:id/reactivate",
+  requireRole(["SUPER_ADMIN", "REGION_ADMIN"]),
+  reactivateAdminEngineerController,
 );
 
 adminRouter.get(

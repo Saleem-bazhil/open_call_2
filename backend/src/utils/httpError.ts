@@ -32,3 +32,7 @@ export function unprocessableEntity(
 ): HttpError {
   return new HttpError(422, message, details);
 }
+
+export function notFound(message = "Not Found", details?: unknown): HttpError {
+  return new HttpError(404, message, details);
+}
