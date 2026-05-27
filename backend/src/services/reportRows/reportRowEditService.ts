@@ -25,6 +25,7 @@ export const EDITABLE_REPORT_ROW_FIELDS = [
   "segment",
   "caseCreatedTime",
   "wipAging",
+  "statusAging",
   "hpOwnerStatus",
 ] as const;
 
@@ -45,6 +46,7 @@ const REQUIRED_MANUAL_FIELD_VALUE_BY_RESPONSE_FIELD: Record<
     | "location"
     | "caseCreatedTime"
     | "wipAging"
+    | "statusAging"
     | "hpOwnerStatus"
     | "customerMail"
     | "rca"
@@ -55,6 +57,7 @@ const REQUIRED_MANUAL_FIELD_VALUE_BY_RESPONSE_FIELD: Record<
   engineer: "engineer",
   location: "location",
   case_created_time: "caseCreatedTime",
+  status_aging: "statusAging",
   hp_owner_status: "hpOwnerStatus",
   customer_mail: "customerMail",
   rca: "rca",
@@ -154,6 +157,8 @@ function mergeRowValues(
         : cleanEditableValue(input.caseCreatedTime),
     wipAging:
       input.wipAging === undefined ? current.wipAging : cleanEditableValue(input.wipAging),
+    statusAging:
+      input.statusAging === undefined ? current.statusAging : cleanEditableValue(input.statusAging),
     hpOwnerStatus:
       input.hpOwnerStatus === undefined
         ? current.hpOwnerStatus

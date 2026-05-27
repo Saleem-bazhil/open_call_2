@@ -258,6 +258,9 @@ function setManualFieldValue(
     case "hp_owner_status":
       row.enriched.hp_owner_status = value;
       return;
+    case "status_aging":
+      row.enriched.status_aging = value;
+      return;
     case "customer_mail":
       row.enriched.customer_mail = value;
       return;
@@ -292,6 +295,8 @@ function persistedManualFieldValue(
       return persisted.caseCreatedTime;
     case "hp_owner_status":
       return persisted.hpOwnerStatus;
+    case "status_aging":
+      return (persisted as any).statusAging ?? null;
     case "customer_mail":
       return persisted.customerMail;
     case "rca":
@@ -395,6 +400,24 @@ async function applyPersistedRowMetadata(
       const persistedValue = persistedManualFieldValue(persisted, field);
       const generatedValue = manualFieldValue(row, field);
 
+      if (field === "status_aging") {
+        if (cleanManualValue(generatedValue)) {
+          setManualFieldValue(row, field, generatedValue);
+          carriedForwardFields.delete(field);
+          continue;
+        }
+
+        if (cleanManualValue(persistedValue)) {
+          setManualFieldValue(row, field, persistedValue);
+          carriedForwardFields.add(field);
+          continue;
+        }
+
+        setManualFieldValue(row, field, null);
+        carriedForwardFields.delete(field);
+        continue;
+      }
+
       if (cleanManualValue(persistedValue)) {
         setManualFieldValue(row, field, persistedValue);
         continue;
@@ -433,6 +456,7 @@ async function applyPersistedRowMetadata(
         location: row.enriched.location,
         caseCreatedTime: row.enriched.case_created_time,
         hpOwnerStatus: row.enriched.hp_owner_status,
+        statusAging: row.enriched.status_aging,
         customerMail: row.enriched.customer_mail,
         rca: row.enriched.rca,
         remarks: row.enriched.remarks,
@@ -549,6 +573,13 @@ export async function generateDailyCallPlanReport(
     const matchedMatches = matches.filter((match) => match.flexWip !== null);
     
     matchedMatches.sort((a, b) => {
+      const aTime = a.enrichedRow.case_created_time ? new Date(a.enrichedRow.case_created_time).getTime() : 0;
+      const bTime = b.enrichedRow.case_created_time ? new Date(b.enrichedRow.case_created_time).getTime() : 0;
+      
+      if (bTime !== aTime) {
+        return bTime - aTime;
+      }
+
       const aAging = parseInt(a.enrichedRow.wip_aging ?? "0", 10);
       const bAging = parseInt(b.enrichedRow.wip_aging ?? "0", 10);
       const valA = Number.isNaN(aAging) ? 0 : aAging;

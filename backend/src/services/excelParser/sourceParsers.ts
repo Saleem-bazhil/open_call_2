@@ -97,6 +97,7 @@ export function parseFlexWipReport(
       customerPincode: normalizePincode(getCell(row.values, ["Customer Pincode", "Pincode", "Pin Code"])),
       productLineName: cleanString(getCell(row.values, ["Product Line Name", "ProductLineName", "Product Line"])),
       workLocation: cleanString(getCell(row.values, ["Work Location", "WorkLocation", "ASP Code", "ASP"])),
+      productSerialNo: cleanString(getCell(row.values, ["Product Serial No", "Product S.No", "Product SN", "Serial No", "Serial Number"])),
       rawRow: row.rawRow,
       rowNumber: row.rowNumber,
     });
@@ -138,8 +139,9 @@ export function parseRenderwaysReport(
       rtplStatus: cleanString(getCell(row.values, ["RTPL Status", "RTPL status", "Morning Status"])),
       hpOwner: cleanString(getCell(row.values, ["HP Owner", "HP Owner Status"])),
       rcaMessage: cleanString(getCell(row.values, ["RCA Message", "RCA"])),
-      productType: cleanString(getCell(row.values, ["Product Type"])),
-      callClassification: cleanString(getCell(row.values, ["Call Classification"])),
+      productType: cleanString(getCell(row.values, ["Product Type", "Product"])),
+      callClassification: cleanString(getCell(row.values, ["Call Classification", "Segment"])),
+      wipChangedFromMorningReport: cleanString(getCell(row.values, ["WIP Changed From Morning Report", "WIP Changes From Morning Report", "Wip Chnages From Morning Report", "WIP Changed"])),
       rawRow: row.rawRow,
       rowNumber: row.rowNumber,
     });

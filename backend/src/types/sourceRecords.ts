@@ -30,6 +30,7 @@ export interface FlexWipParsedRecord {
   customerPincode: string | null;
   productLineName: string | null;
   workLocation: string | null;
+  productSerialNo: string | null;
   rawRow: Record<string, unknown>;
   rowNumber: number;
 }
@@ -48,6 +49,7 @@ export interface RenderwaysParsedRecord {
   rcaMessage: string | null;
   productType: string | null;
   callClassification: string | null;
+  wipChangedFromMorningReport: string | null;
   rawRow: Record<string, unknown>;
   rowNumber: number;
 }

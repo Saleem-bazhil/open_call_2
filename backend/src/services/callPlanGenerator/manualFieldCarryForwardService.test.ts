@@ -23,6 +23,7 @@ function enrichedRow(
     product_line_name: "Commercial",
     work_location: "ASPS01461",
     flex_status: "Open",
+    status_aging: null,
     hp_owner_status: null,
     wo_otc_code: "OTC",
     account_name: "Account",
@@ -30,6 +31,7 @@ function enrichedRow(
     location: null,
     contact: null,
     part: null,
+    product_serial_no: null,
     wip_aging_category: null,
     tat: null,
     customer_mail: null,
@@ -265,6 +267,5 @@ describe("ManualFieldCarryForwardService", () => {
     expect(closedRow?.comparison?.changeType).toBe("CLOSED");
     expect(closedRow?.enriched.engineer).toBe("Priya");
     expect(closedRow?.enriched.work_location).toBe("ASPS01461");
-    expect(closedRow?.output["Work Location"]).toBe("ASPS01461");
   });
 });

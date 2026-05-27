@@ -17,9 +17,7 @@ function filterReportForRegion(
 ): GeneratedDailyCallPlanReport {
   const wantedCodes = aspCodesForRegion(region);
   const filteredRows = report.rows.filter((row) => {
-    const aspCode = String(
-      row.output["Work Location"] ?? row.enriched.work_location ?? "",
-    )
+    const aspCode = String(row.enriched.work_location ?? "")
       .trim()
       .toUpperCase();
     return wantedCodes.has(aspCode);

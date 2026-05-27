@@ -44,6 +44,7 @@ export interface EnrichedCallPlanRow {
   product_line_name: string | null;
   work_location: string | null;
   flex_status: string | null;
+  status_aging: string | null;
   hp_owner_status: string | null;
   wo_otc_code: string | null;
   account_name: string | null;
@@ -51,6 +52,7 @@ export interface EnrichedCallPlanRow {
   location: string | null;
   contact: string | null;
   part: string | null;
+  product_serial_no: string | null;
   wip_aging_category: string | null;
   tat: string | null;
   customer_mail: string | null;

@@ -37,6 +37,7 @@ export const reportRowEditRequestSchema = z
     segment: editableTextSchema,
     case_created_time: editableDateTimeSchema,
     wip_aging: editableTextSchema,
+    status_aging: editableTextSchema,
     hp_owner_status: editableTextSchema,
   })
   .strict()
@@ -54,5 +55,6 @@ export const reportRowEditRequestSchema = z
     segment: body.segment,
     caseCreatedTime: normalizeDateTime(body.case_created_time),
     wipAging: body.wip_aging,
+    statusAging: body.status_aging,
     hpOwnerStatus: body.hp_owner_status,
   }));

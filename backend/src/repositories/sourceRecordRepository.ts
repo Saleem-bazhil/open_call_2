@@ -4,6 +4,8 @@ import type {
   FlexWipParsedRecord,
   RenderwaysParsedRecord,
 } from "../types/sourceRecords.js";
+import { getCell } from "../services/excelParser/rowAccess.js";
+import { cleanString } from "../services/normalization/valueNormalizer.js";
 
 interface FlexWipRecordRow {
   id: string;
@@ -251,6 +253,7 @@ export async function findFlexWipRecordsByBatchId(
     customerPincode: row.customer_pincode,
     productLineName: row.product_line_name,
     workLocation: row.work_location,
+    productSerialNo: cleanString(getCell(row.raw_row as Record<string, unknown>, ["Product Serial No", "Product S.No", "Product SN", "Serial No", "Serial Number"])),
     rawRow: row.raw_row,
     rowNumber: row.row_number,
   }));
@@ -299,6 +302,7 @@ export async function findRenderwaysRecordsByBatchId(
     rcaMessage: row.rca_message,
     productType: row.product_type,
     callClassification: row.call_classification,
+    wipChangedFromMorningReport: cleanString(getCell(row.raw_row as Record<string, unknown>, ["WIP Changed From Morning Report", "WIP Changes From Morning Report", "Wip Chnages From Morning Report", "WIP Changed"])),
     rawRow: row.raw_row,
     rowNumber: row.row_number,
   }));
