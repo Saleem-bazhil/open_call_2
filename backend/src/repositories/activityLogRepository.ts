@@ -173,6 +173,7 @@ export async function insertActivity(input: InsertActivityInput): Promise<void> 
 
 export async function listRtplStatusChanges(filters: {
   reportId: string;
+  changeDate?: string;
   regionId?: string | null;
   workLocationCodes?: readonly string[];
   limit?: number;
@@ -184,6 +185,16 @@ export async function listRtplStatusChanges(filters: {
   ];
   const params: unknown[] = [filters.reportId];
   conditions.push(`a.metadata->>'reportId' = $1`);
+
+  if (filters.changeDate) {
+    const { startUtc, endUtc } = istBusinessDateUtcRange(filters.changeDate);
+    params.push(startUtc);
+    const startParam = params.length;
+    params.push(endUtc);
+    const endParam = params.length;
+    conditions.push(`a.occurred_at >= $${startParam}::timestamptz`);
+    conditions.push(`a.occurred_at < $${endParam}::timestamptz`);
+  }
 
   const workLocationCodes = (filters.workLocationCodes ?? [])
     .map((code) => code.trim().toUpperCase())
@@ -233,6 +244,22 @@ export async function listRtplStatusChanges(filters: {
   );
 
   return result.rows.map(mapRtplStatusChangeActivity);
+}
+
+function istBusinessDateUtcRange(changeDate: string): {
+  startUtc: string;
+  endUtc: string;
+} {
+  const year = Number(changeDate.slice(0, 4));
+  const month = Number(changeDate.slice(5, 7));
+  const day = Number(changeDate.slice(8, 10));
+  const startUtc = new Date(Date.UTC(year, month - 1, day, -5, -30));
+  const endUtc = new Date(Date.UTC(year, month - 1, day + 1, -5, -30));
+
+  return {
+    startUtc: startUtc.toISOString(),
+    endUtc: endUtc.toISOString(),
+  };
 }
 
 export interface ActivityFilters {

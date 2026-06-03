@@ -12,6 +12,54 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { badRequest, forbidden } from "../utils/httpError.js";
 import { reportRowEditRequestSchema } from "../validators/reportRowEditRequestValidator.js";
 
+function firstQueryString(value: unknown): string {
+  if (Array.isArray(value)) {
+    return firstQueryString(value[0]);
+  }
+
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function todayIstDate(): string {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const partValue = (type: string) =>
+    parts.find((part) => part.type === type)?.value ?? "";
+
+  return `${partValue("year")}-${partValue("month")}-${partValue("day")}`;
+}
+
+function parseRtplChangeDate(value: unknown): string {
+  const rawDate = firstQueryString(value);
+
+  if (!rawDate) {
+    return todayIstDate();
+  }
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(rawDate);
+
+  if (!match) {
+    throw badRequest("Invalid RTPL change date. Use YYYY-MM-DD.");
+  }
+
+  const [, year, month, day] = match;
+  const parsed = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+
+  if (
+    parsed.getUTCFullYear() !== Number(year) ||
+    parsed.getUTCMonth() !== Number(month) - 1 ||
+    parsed.getUTCDate() !== Number(day)
+  ) {
+    throw badRequest("Invalid RTPL change date. Use YYYY-MM-DD.");
+  }
+
+  return rawDate;
+}
+
 export const updateReportRowController: RequestHandler = asyncHandler(
   async (request, response) => {
     const currentUser = requireCurrentUser(request.currentUser);
@@ -71,6 +119,9 @@ export const listRtplStatusChangesController: RequestHandler = asyncHandler(
     const currentUser = requireCurrentUser(request.currentUser);
     const reportId = String(request.query.reportId ?? "").trim();
     const parsedLimit = Number(request.query.limit ?? 50);
+    const changeDate = parseRtplChangeDate(
+      request.query.changeDate ?? request.query.reportDate,
+    );
 
     if (!reportId) {
       throw badRequest("Missing report id");
@@ -97,6 +148,7 @@ export const listRtplStatusChangesController: RequestHandler = asyncHandler(
 
     const changes = await listRtplStatusChanges({
       reportId,
+      changeDate,
       limit: Number.isFinite(parsedLimit) ? parsedLimit : 50,
       ...(regionId ? { regionId } : {}),
       ...(workLocationCodes ? { workLocationCodes } : {}),
