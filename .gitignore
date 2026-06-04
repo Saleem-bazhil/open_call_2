@@ -53,3 +53,15 @@ test.xls
 
 # uploads
 backend/storage/uploads/
+
+# Python virtual environment & compiled files
+.venv/
+venv/
+ENV/
+env/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.Python
+backend/.venv/
