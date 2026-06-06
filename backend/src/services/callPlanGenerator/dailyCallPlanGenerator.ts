@@ -99,6 +99,26 @@ function initialCarryForwardMetadata(): ManualCarryForwardRowMetadata {
   };
 }
 
+function getOtcSortWeight(code: string): number {
+  const normalized = code.trim().toUpperCase();
+  if (normalized.includes("TRADE")) {
+    return 6;
+  }
+  if (normalized.startsWith("05F") || normalized.startsWith("O5F")) {
+    return 1;
+  }
+  if (normalized.startsWith("05K") || normalized.startsWith("O5K")) {
+    return 2;
+  }
+  if (normalized.startsWith("02N") || normalized.startsWith("O2N")) {
+    return 3;
+  }
+  if (normalized.startsWith("00C") || normalized.startsWith("OOC")) {
+    return 4;
+  }
+  return 5;
+}
+
 function computeRegionBreakdown(
   rows: readonly GeneratedDailyCallPlanRow[],
 ): import("../../types/reportGeneration.js").RegionBreakdownEntry[] {
@@ -133,7 +153,14 @@ function computeRegionBreakdown(
   const breakdown = Array.from(regionMap.entries()).map(([aspCode, data]) => {
     const woOtcCodeBreakdown = Array.from(data.woOtcCodes.entries())
       .map(([code, count]) => ({ code, count }))
-      .sort((a, b) => b.count - a.count || a.code.localeCompare(b.code));
+      .sort((a, b) => {
+        const weightA = getOtcSortWeight(a.code);
+        const weightB = getOtcSortWeight(b.code);
+        if (weightA !== weightB) {
+          return weightA - weightB;
+        }
+        return a.code.localeCompare(b.code);
+      });
 
     return {
       aspCode,
