@@ -96,6 +96,7 @@ function previousFinalRow(): FinalReportManualCarryForwardRow {
     rca: "Awaiting part",
     remarks: null,
     manualNotes: null,
+    flexStatusUnchangedDays: null,
     manualValues: {
       rtpl_status: "Part Pending",
       segment: "Enterprise",

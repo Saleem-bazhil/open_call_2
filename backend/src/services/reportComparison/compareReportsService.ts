@@ -246,6 +246,9 @@ function buildInsight(
     previousWipAging: previousRow?.wipAging ?? null,
     changedFields,
     changeSummary: buildChangeSummary(changeType, changedFields),
+    // Populated by the report generator from the previous final report's
+    // persisted streak; the standalone session comparison has no streak source.
+    flexStatusUnchangedDays: null,
   };
 }
 

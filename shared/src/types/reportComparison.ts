@@ -45,6 +45,13 @@ export interface ReportRowComparisonInsight {
   previousWipAging: string | null;
   changedFields: ReportChangedFields;
   changeSummary: string | null;
+  /**
+   * Number of consecutive report-days (including today) the ticket's Flex Status
+   * has stayed the same value. `null` when there is no previous report at all
+   * (unknown); `1` when there is a previous report but this ticket is new or its
+   * status changed today.
+   */
+  flexStatusUnchangedDays: number | null;
 }
 
 export interface ReportRowDiff {

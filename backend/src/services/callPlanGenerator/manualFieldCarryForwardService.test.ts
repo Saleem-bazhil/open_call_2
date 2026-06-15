@@ -113,6 +113,7 @@ function previousFinalRow(
     rca: "Awaiting part",
     remarks: "Call after 4 PM",
     manualNotes: "Escalated locally",
+    flexStatusUnchangedDays: null,
     manualValues: {
       rtpl_status: "Pending customer",
       segment: "Enterprise",

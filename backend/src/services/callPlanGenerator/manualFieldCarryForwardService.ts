@@ -192,6 +192,7 @@ function closedComparisonInsight(
     previousWipAging: previous.wipAging,
     changedFields: {},
     changeSummary: "Ticket closed",
+    flexStatusUnchangedDays: previous.flexStatusUnchangedDays,
   };
 }
 

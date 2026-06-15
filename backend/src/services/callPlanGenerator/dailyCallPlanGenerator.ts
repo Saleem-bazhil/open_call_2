@@ -1,4 +1,5 @@
 import { DAILY_CALL_PLAN_COLUMNS, regionNameForAspCode } from "@opencall/shared";
+import type { ReportRowComparisonInsight } from "@opencall/shared";
 import { withTransaction } from "../../config/database.js";
 import {
   findActiveSlaHoursByCategory,
@@ -10,6 +11,7 @@ import {
   findDailyCallPlanReportRowMetadataByReportId,
   findPreviousFinalReportRowsForManualCarryForward,
   insertDailyCallPlanReportRows,
+  type FinalReportManualCarryForwardRow,
 } from "../../repositories/dailyCallPlanReportRepository.js";
 import { findOrCreateCompletedHistorySessionForReport } from "../../repositories/historyRepository.js";
 import {
@@ -50,6 +52,7 @@ import {
   formatDailyCallPlanRow,
   orderedDailyCallPlanRow,
 } from "./dailyCallPlanFormatter.js";
+import { computeFlexStatusUnchangedDays } from "./flexStatusUnchangedDays.js";
 import {
   cleanManualValue,
   manualFieldCarryForwardService,
@@ -226,6 +229,74 @@ function applyComparisonToGeneratedRows(
 
   for (const row of rows) {
     row.comparison = insightByRowNumber.get(row.serialNo) ?? row.comparison;
+  }
+}
+
+function emptyComparisonInsight(): ReportRowComparisonInsight {
+  return {
+    changeType: null,
+    previousFlexStatus: null,
+    previousRtplStatus: null,
+    previousWipAging: null,
+    changedFields: {},
+    changeSummary: null,
+    flexStatusUnchangedDays: null,
+  };
+}
+
+/**
+ * Computes the consecutive-days-Flex-Status-unchanged counter for each row using
+ * the previously persisted final report (matched by normalized ticket id, the
+ * same matching mechanism used by manual carry-forward). The result is attached
+ * to each row's comparison insight so it serializes to
+ * `row.comparison.flexStatusUnchangedDays`.
+ */
+function applyFlexStatusUnchangedDaysToRows(
+  rows: GeneratedDailyCallPlanRow[],
+  previousFinalRows: readonly FinalReportManualCarryForwardRow[],
+): void {
+  const hadPreviousReport = previousFinalRows.length > 0;
+  const previousByTicket = new Map<string, FinalReportManualCarryForwardRow>();
+
+  for (const previous of previousFinalRows) {
+    const ticketKey = getNormalizedTicketKey(previous.ticketId);
+    if (!ticketKey || previousByTicket.has(ticketKey)) {
+      continue;
+    }
+    previousByTicket.set(ticketKey, previous);
+  }
+
+  for (const row of rows) {
+    // Closed synthetic rows are carried straight from the previous report and
+    // already own a comparison insight; preserve their stored streak.
+    if (row.carryForward.closedSyntheticRow) {
+      if (row.comparison) {
+        const ticketKey = getNormalizedTicketKey(row.enriched.ticket_id);
+        const previous = ticketKey ? previousByTicket.get(ticketKey) : undefined;
+        row.comparison.flexStatusUnchangedDays =
+          previous?.flexStatusUnchangedDays ?? null;
+      }
+      continue;
+    }
+
+    const ticketKey = getNormalizedTicketKey(row.enriched.ticket_id);
+    const previous = ticketKey ? previousByTicket.get(ticketKey) : undefined;
+
+    const flexStatusUnchangedDays = computeFlexStatusUnchangedDays({
+      currentFlexStatus: row.enriched.flex_status,
+      previousFlexStatus: previous ? previous.flexStatus : undefined,
+      previousCount: previous?.flexStatusUnchangedDays,
+      hadPreviousReport,
+    });
+
+    if (row.comparison) {
+      row.comparison.flexStatusUnchangedDays = flexStatusUnchangedDays;
+    } else if (flexStatusUnchangedDays !== null) {
+      row.comparison = {
+        ...emptyComparisonInsight(),
+        flexStatusUnchangedDays,
+      };
+    }
   }
 }
 
@@ -721,6 +792,11 @@ export async function generateDailyCallPlanReport(
       }
       comparison = metadataFromComparison(reportComparison);
     }
+
+    // Accumulate the consecutive-days-Flex-Status-unchanged counter from the
+    // previous final report (matched by normalized ticket id). Runs whether or
+    // not a previous comparison session exists so the value is always exposed.
+    applyFlexStatusUnchangedDaysToRows(rows, previousFinalRows);
 
     // Prefer Renderways WIP Aging when uploaded; otherwise calculate from case_created_time.
     const reportNow = new Date();

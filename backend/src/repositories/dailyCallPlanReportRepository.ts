@@ -200,6 +200,7 @@ export interface FinalReportManualCarryForwardRow {
   rca: string | null;
   remarks: string | null;
   manualNotes: string | null;
+  flexStatusUnchangedDays: number | null;
   manualValues: Partial<Record<ManualCarryForwardField, string | null>>;
 }
 
@@ -230,6 +231,7 @@ interface FinalReportManualCarryForwardDbRow {
   rca: string | null;
   remarks: string | null;
   manual_notes: string | null;
+  flex_status_unchanged_days: number | null;
 }
 
 function mapFinalReportManualCarryForwardRow(
@@ -261,6 +263,7 @@ function mapFinalReportManualCarryForwardRow(
     rca: row.rca,
     remarks: row.remarks,
     manualNotes: row.manual_notes,
+    flexStatusUnchangedDays: row.flex_status_unchanged_days,
     manualValues: {
       rtpl_status: row.rtpl_status,
       segment: row.segment,
@@ -426,14 +429,15 @@ export async function insertDailyCallPlanReportRows(
           manual_fields_completed,
           manual_fields_missing,
           match_status,
-          match_notes
+          match_notes,
+          flex_status_unchanged_days
         )
         VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8,
           $9, $10, $11, $12, $13, $14, $15, $16,
           $17, $18, $19, $20, $21, $22, $23, $24,
           $25, $26, $27, $28, $29, $30, $31, $32::jsonb, $33, $34::jsonb, $35, $36::text[],
-          $37, $38::jsonb
+          $37, $38::jsonb, $39
         )
         RETURNING id, updated_at::TEXT AS updated_at, updated_by::TEXT AS updated_by
       `,
@@ -476,6 +480,7 @@ export async function insertDailyCallPlanReportRows(
         row.carryForward.manualFieldsMissing,
         row.enriched.match_status,
         JSON.stringify(row.match.notes),
+        row.comparison?.flexStatusUnchangedDays ?? null,
       ],
     );
     const inserted = result.rows[0] as InsertedDailyReportRow | undefined;
@@ -520,7 +525,8 @@ export async function findFinalReportRowsForManualCarryForwardBySessionId(
         rows.customer_mail,
         rows.rca,
         rows.remarks,
-        rows.manual_notes
+        rows.manual_notes,
+        rows.flex_status_unchanged_days
       FROM report_history_sessions sessions
       JOIN daily_call_plan_report_rows rows
         ON rows.report_id = sessions.daily_call_plan_report_id
@@ -642,7 +648,8 @@ export async function findPreviousFinalReportRowsForManualCarryForward(
         rows.customer_mail,
         rows.rca,
         rows.remarks,
-        rows.manual_notes
+        rows.manual_notes,
+        rows.flex_status_unchanged_days
       FROM previous_session
       JOIN report_history_sessions sessions
         ON sessions.id = previous_session.id

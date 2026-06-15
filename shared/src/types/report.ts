@@ -35,4 +35,5 @@ export interface DailyCallPlanRow {
   previousWipAging?: string | null;
   changedFields?: ReportChangedFields;
   changeSummary?: string | null;
+  flexStatusUnchangedDays?: number | null;
 }

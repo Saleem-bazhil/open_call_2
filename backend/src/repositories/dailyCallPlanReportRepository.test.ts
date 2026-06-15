@@ -130,11 +130,14 @@ describe("insertDailyCallPlanReportRows", () => {
     expect(sql).toContain("manual_fields_missing");
     expect(sql).toContain("product_line_name");
     expect(sql).toContain("work_location");
+    expect(sql).toContain("flex_status_unchanged_days");
     expect(values[11]).toBe("Commercial");
     expect(values[12]).toBe("ASPS01461");
     expect(values[33]).toBe(JSON.stringify(["engineer", "customer_mail"]));
     expect(values[34]).toBe(true);
     expect(values[35]).toEqual([]);
+    // flex_status_unchanged_days is appended last; null when no comparison insight.
+    expect(values[38]).toBeNull();
   });
 
   it("loads persisted manual fields for regenerated history reports", async () => {

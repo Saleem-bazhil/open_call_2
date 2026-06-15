@@ -55,6 +55,7 @@ const REQUIRED_COLUMNS: readonly RequiredColumn[] = [
   { tableName: "daily_call_plan_report_rows", columnName: "change_type" },
   { tableName: "daily_call_plan_report_rows", columnName: "changed_fields" },
   { tableName: "daily_call_plan_report_rows", columnName: "change_summary" },
+  { tableName: "daily_call_plan_report_rows", columnName: "flex_status_unchanged_days" },
   { tableName: "daily_call_plan_report_rows", columnName: "carried_forward_fields" },
   { tableName: "daily_call_plan_report_rows", columnName: "manual_fields_completed" },
   { tableName: "daily_call_plan_report_rows", columnName: "manual_fields_missing" },
