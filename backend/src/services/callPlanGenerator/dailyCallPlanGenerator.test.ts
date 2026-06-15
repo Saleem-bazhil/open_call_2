@@ -157,6 +157,7 @@ function currentMatch(): MatchedCallPlanRecord {
       work_location: "ASP501461",
       flex_status: "Open",
       status_aging: null,
+      current_status_aging: null,
       hp_owner_status: null,
       wo_otc_code: "OTC",
       account_name: "Account",

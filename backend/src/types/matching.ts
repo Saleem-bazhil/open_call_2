@@ -45,6 +45,8 @@ export interface EnrichedCallPlanRow {
   work_location: string | null;
   flex_status: string | null;
   status_aging: string | null;
+  /** Renderways "current status aging" in days (numeric). */
+  current_status_aging: number | null;
   hp_owner_status: string | null;
   wo_otc_code: string | null;
   account_name: string | null;

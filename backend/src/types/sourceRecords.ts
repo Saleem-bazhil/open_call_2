@@ -51,6 +51,8 @@ export interface RenderwaysParsedRecord {
   callClassification: string | null;
   customerType: string | null;
   wipChangedFromMorningReport: string | null;
+  /** Renderways "current status aging" (days) — drives the stale-status banner. */
+  currentStatusAging: number | null;
   rawRow: Record<string, unknown>;
   rowNumber: number;
 }

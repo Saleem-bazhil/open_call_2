@@ -5,7 +5,7 @@ import type {
   RenderwaysParsedRecord,
 } from "../types/sourceRecords.js";
 import { getCell } from "../services/excelParser/rowAccess.js";
-import { cleanString } from "../services/normalization/valueNormalizer.js";
+import { cleanString, parseAgingDays } from "../services/normalization/valueNormalizer.js";
 
 interface FlexWipRecordRow {
   id: string;
@@ -304,6 +304,7 @@ export async function findRenderwaysRecordsByBatchId(
     callClassification: row.call_classification,
     customerType: cleanString(getCell(row.raw_row as Record<string, unknown>, ["Customer Type", "CustomerType", "Customer type"])),
     wipChangedFromMorningReport: cleanString(getCell(row.raw_row as Record<string, unknown>, ["WIP Changed From Morning Report", "WIP Changes From Morning Report", "Wip Chnages From Morning Report", "WIP Changed"])),
+    currentStatusAging: parseAgingDays(getCell(row.raw_row as Record<string, unknown>, ["Current Status Aging", "current status aging", "Status Aging"])),
     rawRow: row.raw_row,
     rowNumber: row.row_number,
   }));

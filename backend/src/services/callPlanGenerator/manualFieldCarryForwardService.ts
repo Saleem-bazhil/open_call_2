@@ -148,6 +148,7 @@ function closedRowToEnriched(
     work_location: row.workLocation,
     flex_status: row.flexStatus,
     status_aging: previousFieldValue(row, "status_aging"),
+    current_status_aging: null,
     hp_owner_status: row.hpOwnerStatus,
     wo_otc_code: row.woOtcCode,
     account_name: row.accountName,

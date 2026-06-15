@@ -248,6 +248,7 @@ function buildEnrichedRow(
     work_location: flexWip?.workLocation ?? null,
     flex_status: flexWip?.flexStatus ?? null,
     status_aging: renderways?.wipChangedFromMorningReport ?? null,
+    current_status_aging: renderways?.currentStatusAging ?? null,
     hp_owner_status: renderways?.hpOwner ?? null,
     wo_otc_code: flexWip?.woOtcCode ?? null,
     account_name: flexWip?.accountName ?? null,

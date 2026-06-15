@@ -14,6 +14,7 @@ import {
   normalizeCaseId,
   normalizePincode,
   normalizeTicketId,
+  parseAgingDays,
   parseExcelDate,
 } from "../normalization/valueNormalizer.js";
 import { readExcelSheet } from "./excelWorkbookReader.js";
@@ -143,6 +144,7 @@ export function parseRenderwaysReport(
       callClassification: cleanString(getCell(row.values, ["Call Classification", "Segment"])),
       customerType: cleanString(getCell(row.values, ["Customer Type", "CustomerType", "Customer type"])),
       wipChangedFromMorningReport: cleanString(getCell(row.values, ["WIP Changed From Morning Report", "WIP Changes From Morning Report", "Wip Chnages From Morning Report", "WIP Changed"])),
+      currentStatusAging: parseAgingDays(getCell(row.values, ["Current Status Aging", "current status aging", "Status Aging"])),
       rawRow: row.rawRow,
       rowNumber: row.rowNumber,
     });

@@ -31,6 +31,23 @@ export function normalizePincode(value: unknown): string | null {
   return digits.length > 0 ? digits : null;
 }
 
+/**
+ * Parse a whole-number "aging in days" value from a spreadsheet cell. Tolerates
+ * surrounding text (e.g. "23 days") by extracting the first number; returns null
+ * when there is no numeric content.
+ */
+export function parseAgingDays(value: unknown): number | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  const match = String(value).match(/-?\d+(?:\.\d+)?/);
+  if (!match) {
+    return null;
+  }
+  const parsed = Number(match[0]);
+  return Number.isFinite(parsed) ? Math.trunc(parsed) : null;
+}
+
 const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
 
 function dateFromIstWallClock(
