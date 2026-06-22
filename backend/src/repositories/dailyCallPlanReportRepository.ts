@@ -180,6 +180,7 @@ export interface FinalReportManualCarryForwardRow {
   caseId: string | null;
   caseCreatedTime: string | null;
   wipAging: string | null;
+  statusAging: string | null;
   rtplStatus: string | null;
   segment: string | null;
   engineer: string | null;
@@ -243,6 +244,7 @@ function mapFinalReportManualCarryForwardRow(
     caseId: row.case_id,
     caseCreatedTime: row.case_created_time,
     wipAging: row.wip_aging,
+    statusAging: row.status_aging,
     rtplStatus: row.rtpl_status,
     segment: row.segment,
     engineer: row.engineer,
@@ -506,6 +508,7 @@ export async function findFinalReportRowsForManualCarryForwardBySessionId(
         rows.case_id,
         rows.case_created_time::TEXT AS case_created_time,
         rows.wip_aging,
+        rows.status_aging,
         rows.rtpl_status,
         rows.segment,
         rows.engineer,

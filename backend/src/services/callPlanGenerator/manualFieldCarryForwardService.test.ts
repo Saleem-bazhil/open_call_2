@@ -115,12 +115,14 @@ function previousFinalRow(
     remarks: "Call after 4 PM",
     manualNotes: "Escalated locally",
     flexStatusUnchangedDays: null,
+    statusAging: "2",
     manualValues: {
       rtpl_status: "Pending customer",
       segment: "Enterprise",
       engineer: "Priya",
       location: "Chennai",
       case_created_time: "2026-03-27T17:41:55.000Z",
+      status_aging: "2",
       hp_owner_status: "Actionable",
       customer_mail: "customer@example.com",
       rca: "Awaiting part",
@@ -138,6 +140,7 @@ function previousFinalRow(
       engineer: row.engineer,
       location: row.location,
       case_created_time: row.caseCreatedTime,
+      status_aging: row.statusAging,
       hp_owner_status: row.hpOwnerStatus,
       customer_mail: row.customerMail,
       rca: row.rca,
@@ -174,6 +177,7 @@ describe("ManualFieldCarryForwardService", () => {
       "engineer",
       "location",
       "case_created_time",
+      "status_aging",
       "hp_owner_status",
       "customer_mail",
       "rca",
@@ -181,7 +185,7 @@ describe("ManualFieldCarryForwardService", () => {
       "manual_notes",
     ]);
     expect(result.summary).toEqual({
-      totalFieldsCarried: 9,
+      totalFieldsCarried: 10,
       rowsAutoCompleted: 1,
       rowsStillManual: 0,
     });
