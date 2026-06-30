@@ -175,7 +175,8 @@ export async function insertActivity(input: InsertActivityInput): Promise<void> 
 }
 
 export async function listRtplStatusChanges(filters: {
-  reportId: string;
+  reportId?: string;
+  ticketId?: string;
   changeDate?: string;
   regionId?: string | null;
   workLocationCodes?: readonly string[];
@@ -186,8 +187,19 @@ export async function listRtplStatusChanges(filters: {
     `a.status = 'SUCCESS'`,
     `a.metadata ? 'rtplStatusChange'`,
   ];
-  const params: unknown[] = [filters.reportId];
-  conditions.push(`a.metadata->>'reportId' = $1`);
+  const params: unknown[] = [];
+
+  // At least one of reportId / ticketId scopes the query (enforced by caller).
+  // Filtering by ticketId returns the full status history for a single case
+  // across every report it appeared in.
+  if (filters.reportId) {
+    params.push(filters.reportId);
+    conditions.push(`a.metadata->>'reportId' = $${params.length}`);
+  }
+  if (filters.ticketId) {
+    params.push(filters.ticketId);
+    conditions.push(`a.metadata->>'ticketId' = $${params.length}`);
+  }
 
   if (filters.changeDate) {
     const { startUtc, endUtc } = istBusinessDateUtcRange(filters.changeDate);

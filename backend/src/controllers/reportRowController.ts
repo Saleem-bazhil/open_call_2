@@ -118,14 +118,23 @@ export const listRtplStatusChangesController: RequestHandler = asyncHandler(
   async (request, response) => {
     const currentUser = requireCurrentUser(request.currentUser);
     const reportId = String(request.query.reportId ?? "").trim();
+    const ticketId = String(request.query.ticketId ?? "").trim();
     const parsedLimit = Number(request.query.limit ?? 50);
-    const changeDate = parseRtplChangeDate(
+
+    if (!reportId && !ticketId) {
+      throw badRequest("Missing report id or ticket id");
+    }
+
+    // A ticket-scoped query returns the case's full status history across every
+    // report, so it must NOT be constrained to a single business date unless the
+    // caller explicitly asked for one (parseRtplChangeDate defaults to today).
+    const rawChangeDate = firstQueryString(
       request.query.changeDate ?? request.query.reportDate,
     );
-
-    if (!reportId) {
-      throw badRequest("Missing report id");
-    }
+    const changeDate =
+      ticketId && !rawChangeDate
+        ? undefined
+        : parseRtplChangeDate(request.query.changeDate ?? request.query.reportDate);
 
     let regionId: string | null | undefined;
     let workLocationCodes: string[] | undefined;
@@ -147,8 +156,9 @@ export const listRtplStatusChangesController: RequestHandler = asyncHandler(
     }
 
     const changes = await listRtplStatusChanges({
-      reportId,
-      changeDate,
+      ...(reportId ? { reportId } : {}),
+      ...(ticketId ? { ticketId } : {}),
+      ...(changeDate ? { changeDate } : {}),
       limit: Number.isFinite(parsedLimit) ? parsedLimit : 50,
       ...(regionId ? { regionId } : {}),
       ...(workLocationCodes ? { workLocationCodes } : {}),
