@@ -200,15 +200,18 @@ export async function listHistorySessions(
     SELECT
       sessions.*,
       COALESCE(
+        -- The report's real business date is authoritative and locale-proof.
+        -- Only fall back to parsing the (M/D/YYYY) title for rows with no
+        -- linked report (e.g. drafts).
+        reports.report_date,
         CASE
           WHEN title_date.parts IS NULL THEN NULL
           ELSE make_date(
             (title_date.parts)[3]::INT,
-            (title_date.parts)[2]::INT,
-            (title_date.parts)[1]::INT
+            (title_date.parts)[1]::INT,
+            (title_date.parts)[2]::INT
           )
-        END,
-        reports.report_date
+        END
       )::TEXT AS report_date
     FROM report_history_sessions sessions
     LEFT JOIN daily_call_plan_reports reports
@@ -237,15 +240,18 @@ export async function findHistorySessionById(
     SELECT
       sessions.*,
       COALESCE(
+        -- The report's real business date is authoritative and locale-proof.
+        -- Only fall back to parsing the (M/D/YYYY) title for rows with no
+        -- linked report (e.g. drafts).
+        reports.report_date,
         CASE
           WHEN title_date.parts IS NULL THEN NULL
           ELSE make_date(
             (title_date.parts)[3]::INT,
-            (title_date.parts)[2]::INT,
-            (title_date.parts)[1]::INT
+            (title_date.parts)[1]::INT,
+            (title_date.parts)[2]::INT
           )
-        END,
-        reports.report_date
+        END
       )::TEXT AS report_date
     FROM report_history_sessions sessions
     LEFT JOIN daily_call_plan_reports reports
@@ -269,15 +275,18 @@ export async function getHistorySessionById(
     SELECT
       sessions.*,
       COALESCE(
+        -- The report's real business date is authoritative and locale-proof.
+        -- Only fall back to parsing the (M/D/YYYY) title for rows with no
+        -- linked report (e.g. drafts).
+        reports.report_date,
         CASE
           WHEN title_date.parts IS NULL THEN NULL
           ELSE make_date(
             (title_date.parts)[3]::INT,
-            (title_date.parts)[2]::INT,
-            (title_date.parts)[1]::INT
+            (title_date.parts)[1]::INT,
+            (title_date.parts)[2]::INT
           )
-        END,
-        reports.report_date
+        END
       )::TEXT AS report_date
     FROM report_history_sessions sessions
     LEFT JOIN daily_call_plan_reports reports

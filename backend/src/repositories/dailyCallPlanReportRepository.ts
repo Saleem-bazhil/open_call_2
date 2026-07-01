@@ -597,15 +597,15 @@ export async function findPreviousFinalReportRowsForManualCarryForward(
           sessions.id,
           sessions.updated_at,
           COALESCE(
+            reports.report_date,
             CASE
               WHEN title_date.parts IS NULL THEN NULL
               ELSE make_date(
                 (title_date.parts)[3]::INT,
-                (title_date.parts)[2]::INT,
-                (title_date.parts)[1]::INT
+                (title_date.parts)[1]::INT,
+                (title_date.parts)[2]::INT
               )
-            END,
-            reports.report_date
+            END
           ) AS effective_report_date
         FROM report_history_sessions sessions
         JOIN daily_call_plan_reports reports
@@ -712,15 +712,15 @@ export async function findFlexStatusHistoryForUnchangedDays(
           sessions.id,
           sessions.updated_at,
           COALESCE(
+            reports.report_date,
             CASE
               WHEN title_date.parts IS NULL THEN NULL
               ELSE make_date(
                 (title_date.parts)[3]::INT,
-                (title_date.parts)[2]::INT,
-                (title_date.parts)[1]::INT
+                (title_date.parts)[1]::INT,
+                (title_date.parts)[2]::INT
               )
-            END,
-            reports.report_date
+            END
           ) AS effective_report_date
         FROM report_history_sessions sessions
         JOIN daily_call_plan_reports reports

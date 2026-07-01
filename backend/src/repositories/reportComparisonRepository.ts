@@ -71,15 +71,15 @@ export async function findComparisonSessionById(
         rhs.id,
         rhs.daily_call_plan_report_id AS report_id,
         COALESCE(
+          dcr.report_date,
           CASE
             WHEN title_date.parts IS NULL THEN NULL
             ELSE make_date(
               (title_date.parts)[3]::INT,
-              (title_date.parts)[2]::INT,
-              (title_date.parts)[1]::INT
+              (title_date.parts)[1]::INT,
+              (title_date.parts)[2]::INT
             )
-          END,
-          dcr.report_date
+          END
         )::TEXT AS report_date,
         rhs.region_id,
         rhs.status
@@ -111,15 +111,15 @@ export async function findPreviousCompletedComparisonSession(
           rhs.id,
           rhs.region_id,
           COALESCE(
+            dcr.report_date,
             CASE
               WHEN title_date.parts IS NULL THEN NULL
               ELSE make_date(
                 (title_date.parts)[3]::INT,
-                (title_date.parts)[2]::INT,
-                (title_date.parts)[1]::INT
+                (title_date.parts)[1]::INT,
+                (title_date.parts)[2]::INT
               )
-            END,
-            dcr.report_date
+            END
           ) AS report_date
         FROM report_history_sessions rhs
         JOIN daily_call_plan_reports dcr
@@ -134,15 +134,15 @@ export async function findPreviousCompletedComparisonSession(
         previous.id,
         previous.daily_call_plan_report_id AS report_id,
         COALESCE(
+          previous_report.report_date,
           CASE
             WHEN previous_title_date.parts IS NULL THEN NULL
             ELSE make_date(
               (previous_title_date.parts)[3]::INT,
-              (previous_title_date.parts)[2]::INT,
-              (previous_title_date.parts)[1]::INT
+              (previous_title_date.parts)[1]::INT,
+              (previous_title_date.parts)[2]::INT
             )
-          END,
-          previous_report.report_date
+          END
         )::TEXT AS report_date,
         previous.region_id,
         previous.status
@@ -159,15 +159,15 @@ export async function findPreviousCompletedComparisonSession(
         'Report Session\s+([0-9]{1,2})/([0-9]{1,2})/([0-9]{4})'
       ) AS previous_title_date(parts) ON TRUE
       WHERE COALESCE(
+        previous_report.report_date,
         CASE
           WHEN previous_title_date.parts IS NULL THEN NULL
           ELSE make_date(
             (previous_title_date.parts)[3]::INT,
-            (previous_title_date.parts)[2]::INT,
-            (previous_title_date.parts)[1]::INT
+            (previous_title_date.parts)[1]::INT,
+            (previous_title_date.parts)[2]::INT
           )
-        END,
-        previous_report.report_date
+        END
       ) = current.report_date - INTERVAL '1 day'
       ORDER BY previous.updated_at DESC, previous.id ASC
       LIMIT 1
